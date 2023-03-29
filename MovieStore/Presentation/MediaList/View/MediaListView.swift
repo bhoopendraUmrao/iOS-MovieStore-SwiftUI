@@ -13,6 +13,7 @@ struct MediaListView: View {
     var twoColumnGrid = [GridItem(.fixed(UIScreen.main.bounds.width/2), spacing: 0),
                          GridItem(.fixed(UIScreen.main.bounds.width/2), spacing: 0)]
     @EnvironmentObject var appConfigurator: AppConfigurationContainer
+    @Namespace var namespace
     var body: some View {
         ScrollView {
             LazyVGrid(columns: twoColumnGrid,spacing: 0) {
@@ -28,13 +29,15 @@ struct MediaListView: View {
                         }
                         
                     } label: {
+                        
                         MovieListItemView(movie: .init(id: media.id,
                                                        title: media.title,
                                                        releaseDate: media.releasedDate,
                                                        overview: media.overview,
                                                        posterImage: media.posterImage,
-                                                       rating: media.rating))
+                                                       rating: media.rating), namespace: namespace)
                         .padding(8)
+                        .frame(height: 300)
                     }
                     .onAppear {
                         if media == mediaList.last {

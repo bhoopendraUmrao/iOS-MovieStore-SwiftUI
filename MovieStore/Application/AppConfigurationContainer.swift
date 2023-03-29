@@ -91,7 +91,7 @@ final class AppConfigurationContainer: ObservableObject {
         let movieRepository = DefaultMovieRepository(dataTransferService: apiDataTransferService)
         let movieDetailuseCase = DefaultMovieDetailUseCase(movieRepository: movieRepository)
         let viewModel = DefaultMovieDetailViewModel(mediaId: mediaID, movieDetailUseCase: movieDetailuseCase)
-        return MovieDetailView(viewModel: viewModel)
+        return MovieDetailView(movieId: Int32(mediaID), viewModel: viewModel)
     }
     
     func makeTvShowDetailScene(mediaID: Int) -> some View {

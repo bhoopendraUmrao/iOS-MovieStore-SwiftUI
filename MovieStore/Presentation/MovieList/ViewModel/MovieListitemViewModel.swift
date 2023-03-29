@@ -16,6 +16,15 @@ protocol MediaListItem {
 }
 
 struct MovieListitemViewModel:  Identifiable, Equatable, Hashable {
+    init(id: Int, title: String, releaseDate: String, overview: String, posterImage: URL?, rating: Float?) {
+        self.id = id
+        self.title = title
+        self.releaseDate = releaseDate
+        self.overview = overview
+        self.posterImage = posterImage
+        self.rating = rating
+    }
+    
     let id: Int
     let title: String
     let releaseDate: String

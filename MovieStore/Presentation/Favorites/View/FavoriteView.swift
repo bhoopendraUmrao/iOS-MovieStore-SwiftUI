@@ -13,14 +13,37 @@ struct FavoriteView: View {
     @Environment(\.managedObjectContext) var viewContext
     @State private var showLogin: Bool = false
     @FetchRequest(
-      entity: Favorite.entity(),
-      sortDescriptors: []
-    ) var favorites: FetchedResults<Favorite>
+        entity: Favorite.entity(),
+        sortDescriptors: []
+    ) private var favorites: FetchedResults<Favorite>
+    @Namespace var namespace
+    
+    var twoColumnGrid = [GridItem(.fixed(UIScreen.main.bounds.width/2), spacing: 0),
+                         GridItem(.fixed(UIScreen.main.bounds.width/2), spacing: 0)]
     
     var body: some View {
         if appConfigurator.isUserLoggedIn {
-            List(favorites) { item in
-                Text(item.title ?? "Unknown")
+            NavigationView {
+                VStack {
+                    LazyVGrid(columns: twoColumnGrid,spacing: 0) {
+                        ForEach(favorites) { item in
+                            NavigationLink {
+                                appConfigurator.makeMovieDetailScene(mediaID: Int(item.id))
+                            } label: {
+                                MovieListItemView(movie: .init(id: Int(item.id),
+                                                               title: item.title ?? "NA",
+                                                               releaseDate: item.releaseDate ?? "NA",
+                                                               overview: "",
+                                                               posterImage: item.posterPath,
+                                                               rating: item.rating), namespace: namespace)
+                                .padding(8)
+                                .frame(height: 300)
+                            }
+                        }
+                    }
+                    Spacer()
+                }
+                .navigationBarHidden(true)
             }
         } else {
             Button {

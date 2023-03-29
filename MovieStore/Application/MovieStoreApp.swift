@@ -33,6 +33,7 @@ struct MovieStoreApp: App {
             }
             .environment(\.managedObjectContext, coreDataManager.persistentContainer.viewContext)
             
+            
         }
     }
 }

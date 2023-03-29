@@ -10,6 +10,7 @@ import SwiftUI
 struct MovieListView<Model>: View where Model: MovieListViewModel {
     @ObservedObject var viewModel: Model
     @EnvironmentObject var appConfigurator: AppConfigurationContainer
+    @Namespace var namespace
     var body: some View {
         NavigationView {
             VStack {
@@ -18,7 +19,7 @@ struct MovieListView<Model>: View where Model: MovieListViewModel {
                         NavigationLink() {
                             appConfigurator.makeMovieDetailScene(mediaID: movie.id)
                         } label: {
-                            MovieListItemView(movie: movie)
+                            MovieListItemView(movie: movie, namespace: namespace)
                         }
                         .onAppear {
                             if viewModel.movies.last == movie {

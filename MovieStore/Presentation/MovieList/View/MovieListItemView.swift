@@ -9,14 +9,26 @@ import SwiftUI
 
 struct MovieListItemView: View {
     var movie:MovieListitemViewModel
+    var namespace: Namespace.ID
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            
             VStack(alignment: .leading) {
-                AsyncImage(url: movie.posterImage)
-                    .clipped()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity, maxHeight: 220)
+                GeometryReader { context in
+                    if let url = URL(string: "https://api.lorem.space/image/movie?w=\(Int(context.size.width))&h=\(Int(context.size.height))") {
+                        AsyncImage(url: url) { image in
+                            image.resizable()
+                                .scaledToFit()
+                                .clipped()
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        } placeholder: {
+                            ProgressView("Loading...")
+                                .foregroundColor(.gray)
+                                .font(.body)
+                                .progressViewStyle(.automatic)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    }
+                }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(movie.title)
                         .lineLimit(1)
@@ -32,9 +44,9 @@ struct MovieListItemView: View {
                 .padding(.top, 12)
             }
             UserRatingView(rating: movie.rating ?? 0.0)
-            .frame(width: 40, height: 40, alignment: .center)
-            .padding(.bottom, 55)
-            .padding(.leading, 8)
+                .frame(width: 40, height: 40, alignment: .center)
+                .padding(.bottom, 55)
+                .padding(.leading, 8)
         }
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerSize: .init(width: 10, height: 10)))
@@ -73,7 +85,9 @@ struct MovieListItemView: View {
 }
 
 struct MovieListItemView_Previews: PreviewProvider {
+    @Namespace static var namespace
     static var previews: some View {
+        
         MovieListItemView(movie: MovieListitemViewModel(movie: Media(id: 1,
                                                                      title: "Mock",
                                                                      releaseDate: nil,
@@ -82,6 +96,6 @@ struct MovieListItemView_Previews: PreviewProvider {
                                                                      genre: .adventure,
                                                                      rating: 5.8,
                                                                      language: "en_US",
-                                                                     posterPath: "https://api.lorem.space/image/movie")))
+                                                                     posterPath: "https://api.lorem.space/image/movie")), namespace: namespace)
     }
 }

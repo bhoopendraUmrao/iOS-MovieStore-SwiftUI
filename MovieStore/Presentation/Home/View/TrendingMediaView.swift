@@ -17,7 +17,7 @@ struct TrendingMediaView<ViewModel>: View where ViewModel: TrendingMediaViewMode
         NavigationView {
             ZStack {
                 MediaListView(mediaList: viewModel.mediaList, loadNext: loadNext)
-                    .padding()
+                    .padding(.horizontal, 8)
                     .disabled(showFilter)
                     .opacity(showFilter ? 0.5 :  1.0)
                     .animation(.easeInOut(duration: 0.4), value: showFilter)
@@ -34,9 +34,11 @@ struct TrendingMediaView<ViewModel>: View where ViewModel: TrendingMediaViewMode
                     }
                 }
                 .toolbar {
+                    /*
                     ToolbarItem(placement: .navigationBarTrailing) {
                         sideMenuButton
                     }
+                     */
                 }
             }
             .onAppear {

@@ -12,6 +12,15 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
     @State private var showingLogin = false
     @EnvironmentObject var appConfigurator: AppConfigurationContainer
     @Environment(\.managedObjectContext) var viewContext
+    @FetchRequest var favorite: FetchedResults<Favorite>
+    
+    init(movieId: Int32, viewModel: MovieDetailVM) {
+        _favorite = FetchRequest<Favorite>(entity: Favorite.entity(),
+                                           sortDescriptors: [],
+                                           predicate: NSPredicate(format: "id == %@",argumentArray: [movieId]))
+        self.viewModel = viewModel
+    }
+    
     var body: some View {
         ScrollView(.vertical) {
             VStack {
@@ -57,7 +66,7 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
                 }
                 tagline
                 HStack {
-                    addToFavoriteButton
+                    favoriteButton
                         .padding(.horizontal, 8)
                     Spacer()
                 }
@@ -96,13 +105,19 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
         }
     }
     
-    private var addToFavoriteButton: some View {
+    private var favoriteButton: some View {
         Button(action: {
             if appConfigurator.isUserLoggedIn {
-                let favoriteMovie = Favorite(context: viewContext)
-                favoriteMovie.title = viewModel.movieDetail?.title
-                favoriteMovie.releaseDate = viewModel.movieDetail?.releasedDate
-                favoriteMovie.id = Int32(viewModel.movieDetail?.id ?? 0)
+                if let favorite = favorite.first {
+                    viewContext.delete(favorite)
+                } else {
+                    let favoriteMovie = Favorite(context: viewContext)
+                    favoriteMovie.title = viewModel.movieDetail?.title
+                    favoriteMovie.releaseDate = viewModel.movieDetail?.releasedDate
+                    favoriteMovie.id = Int32(viewModel.movieDetail?.id ?? 0)
+                    favoriteMovie.posterPath = viewModel.movieDetail?.posterImage
+                    favoriteMovie.rating = viewModel.movieDetail?.rating ?? 0.0
+                }
                 try? viewContext.save()
             } else {
                 showingLogin.toggle()
@@ -110,9 +125,15 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
         }, label: {
             HStack {
                 Group {
-                    Text("Mark as favorite")
-                    Image(systemName: "star")
-                        .padding(.trailing, 8)
+                    if favorite.count == 0 {
+                        Text("Mark as favorite")
+                        Image(systemName: "star")
+                            .padding(.trailing, 8)
+                    } else {
+                        Text("Remove from favorite")
+                        Image(systemName: "star.fill")
+                            .padding(.trailing, 8)
+                    }
                 }
                 .padding(.leading, 8)
                 .padding(.vertical, 8)
