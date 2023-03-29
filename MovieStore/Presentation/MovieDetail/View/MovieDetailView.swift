@@ -12,8 +12,9 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
     @State private var showingLogin = false
     @EnvironmentObject var appConfigurator: AppConfigurationContainer
     @Environment(\.managedObjectContext) var viewContext
+    @Environment(\.dismiss) private var dismiss
     @FetchRequest var favorite: FetchedResults<Favorite>
-    
+    @State var show: Bool = false
     init(movieId: Int32, viewModel: MovieDetailVM) {
         _favorite = FetchRequest<Favorite>(entity: Favorite.entity(),
                                            sortDescriptors: [],
@@ -22,86 +23,114 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
     }
     
     var body: some View {
-        ScrollView(.vertical) {
-            VStack {
-                HStack(alignment: .top) {
-                    postImage
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.movieDetail?.title ?? "NA")
-                            .fixedSize(horizontal: false, vertical: true)
-                            .font(.headline)
-                        Text(viewModel.movieDetail?.releasedDate ?? "NA")
-                            .font(.subheadline)
-                            .foregroundColor(Color(UIColor.lightGray))
-                            .fontWeight(.semibold)
-                        HStack(alignment: .top) {
-                            UserRatingView(rating: viewModel.movieDetail?.rating ?? 0.0)
-                                .frame(width: 60, height: 60, alignment: .top)
-                            Text("User Score")
+        VStack {
+            movieBanner
+                .frame(height: UIScreen.main.bounds.height*0.34)
+            ScrollView(.vertical) {
+                VStack(alignment: .leading) {
+                    Group {
+                        Text("Overview")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        Text(viewModel.movieDetail?.overview ?? "NA")
+                            .lineSpacing(1.5)
+                            .font(.body)
+                            .padding(.vertical, 0)
+                        HStack {
+                            Text("Geners: ")
+                                .font(.title3)
                                 .fontWeight(.bold)
-                                .frame(maxWidth: .infinity, maxHeight: 70, alignment: .topLeading)
-                                .padding(.top, 4)
+                            Text(viewModel.movieDetail?.geners.compactMap{$0.name}.joined(separator: ", ") ?? "NA")
                         }
-                        .padding(.vertical, 4)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Budget:")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                            let budget = String(format: "$%.1f", viewModel.movieDetail?.budget ?? 0.0)
-                            Text(budget)
-                        }
-                        .padding(.bottom, 8)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Revenue:")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                            let revenue = String(format: "$%.1f", viewModel.movieDetail?.revenue ?? 0.0)
-                            Text(revenue)
-                        }
-                        .padding(.bottom, 8)
-                    }
-                    .padding(.trailing, 16)
-                }
-                tagline
-                HStack {
-                    favoriteButton
-                        .padding(.horizontal, 8)
-                    Spacer()
-                }
-                Group {
-                    Text("Overview")
-                        .font(.title)
-                        .fontWeight(.bold)
-                    Text(viewModel.movieDetail?.overview ?? "NA")
-                        .lineSpacing(1.5)
-                        .font(.body)
-                    HStack {
-                        Text("Geners: ")
+                        Text("Casts:")
                             .font(.title3)
                             .fontWeight(.bold)
-                        Text(viewModel.movieDetail?.geners.compactMap{$0.name}.joined(separator: ", ") ?? "NA")
+                            .padding(0)
+                        CharacterListView(casts: viewModel.castList)
+                        Text("Videos:")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .padding(0)
+                        HVideoListView(videoList: viewModel.videoList)
                     }
-                    Text("Casts:")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .padding(0)
-                    CharacterListView(casts: viewModel.castList)
-                    Text("Videos:")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .padding(0)
-                    HVideoListView(videoList: viewModel.videoList)
+                    .padding(8)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
-                .padding(.top, 4)
-                Spacer()
             }
-            .onAppear {
-                viewModel.didFetch()
+            Spacer()
+        }
+        .ignoresSafeArea()
+        .onAppear {
+            viewModel.didFetch()
+        }
+    }
+    
+    private var movieBanner: some View {
+        GeometryReader { context in
+            ZStack {
+                VStack(alignment: .leading) {
+                    if let url = viewModel.movieDetail?.posterImage {
+                        AsyncImage(url: url) { image in
+                            image.resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(maxWidth: context.size.width,
+                                       maxHeight: context.size.width - 100)
+                                .clipped()
+                        } placeholder: {
+                            ProgressView("Loading...")
+                                .foregroundColor(.gray)
+                                .font(.body)
+                                .progressViewStyle(.automatic)
+                                .frame(maxWidth: context.size.width,
+                                       maxHeight: context.size.width - 100)
+                        }
+                        .overlay {
+                            GeometryReader { context in
+                                ZStack(alignment: .topLeading) {
+                                    backButton
+                                        .padding(.top, context.size.height*0.2)
+                                        .padding(.leading, 4)
+                                    ZStack {
+                                        Color(white: 0, opacity: 0.5)
+                                        HStack(alignment: .top) {
+                                            VStack(alignment: .leading) {
+                                                Text(viewModel.movieDetail?.title ?? "NA")
+                                                    .lineLimit(1)
+                                                    .foregroundColor(Color.white)
+                                                    .font(.title)
+                                                
+                                                Text(viewModel.movieDetail?.releasedDate ?? "NA")
+                                                    .foregroundColor(Color.white)
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                            }
+                                            Spacer()
+                                            UserRatingView(rating: viewModel.movieDetail?.rating ?? 0.0)
+                                                .frame(width: 40, height: 40, alignment: .center)
+                                        }
+                                    }
+                                    .padding(.top, context.size.height/2 + 50)
+                                }
+                            }
+                        }
+                    }
+                }
             }
+        }
+    }
+    
+    private var backButton: some View {
+        Button {
+            dismiss()
+        } label: {
+            Image(systemName: "arrow.backward")
+                .imageScale(.large)
+                .foregroundColor(.white)
+                .padding()
+                .background{
+                    Color.black
+                        .opacity(0.2)
+                }
+                .clipShape(Circle())
         }
     }
     
@@ -125,15 +154,9 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
         }, label: {
             HStack {
                 Group {
-                    if favorite.count == 0 {
-                        Text("Mark as favorite")
-                        Image(systemName: "star")
-                            .padding(.trailing, 8)
-                    } else {
-                        Text("Remove from favorite")
-                        Image(systemName: "star.fill")
-                            .padding(.trailing, 8)
-                    }
+                    Text("Mark as favorite")
+                    Image(systemName: "star")
+                        .padding(.trailing, 8)
                 }
                 .padding(.leading, 8)
                 .padding(.vertical, 8)
@@ -144,27 +167,6 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
         })
         .sheet(isPresented: $showingLogin) {
             appConfigurator.makeLoginView()
-        }
-    }
-    
-    private var postImage: some View {
-        ZStack {
-
-            AsyncImage(url: viewModel.movieDetail?.posterImage) { image in
-                image.resizable()
-                    .clipped()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(maxWidth: .infinity, maxHeight: 280)
-            } placeholder: {
-                ZStack {
-                    Color.clear
-                        .frame(minWidth: 250, maxWidth: .infinity,minHeight: 280, maxHeight: 280)
-                    ProgressView("Loading...")
-                        .foregroundColor(.white)
-                        .font(.body)
-                        .progressViewStyle(.automatic)
-                }
-            }
         }
     }
     
