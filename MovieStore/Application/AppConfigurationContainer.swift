@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import SENetworking
 
 final class AppConfiguration {
     lazy var apiKey: String = {
@@ -36,21 +37,21 @@ final class AppConfigurationContainer: ObservableObject {
     lazy var appConfiguration = AppConfiguration()
     
     // MARK: - Network
-    lazy var apiDataTransferService: DataTransferService = {
+    lazy var apiDataTransferService: AsyncDataTransferService = {
         let config = ApiDataNetworkConfig(baseURL: URL(string: appConfiguration.apiBaseURL)!,
                                           queryParameters: ["api_key": appConfiguration.apiKey,
                                                             "language": NSLocale.preferredLanguages.first ?? "en"])
         
-        let apiDataNetwork = DefaultNetworkService(config: config)
-        return DefaultDataTransferService(with: apiDataNetwork)
+        let apiDataNetwork = DefaultAsyncNetworkService(config: config)
+        return DefaultAsyncDataTransferService(with: apiDataNetwork)
     }()
     
     @Published var isUserLoggedIn: Bool = false
     
-    lazy var imageDataTransferService: DataTransferService = {
+    lazy var imageDataTransferService: AsyncDataTransferService = {
         let config = ApiDataNetworkConfig(baseURL: URL(string: appConfiguration.imagesBaseURL)!)
-        let imagesDataNetwork = DefaultNetworkService(config: config)
-        return DefaultDataTransferService(with: imagesDataNetwork)
+        let imagesDataNetwork = DefaultAsyncNetworkService(config: config)
+        return DefaultAsyncDataTransferService(with: imagesDataNetwork)
     }()
     
     init() {

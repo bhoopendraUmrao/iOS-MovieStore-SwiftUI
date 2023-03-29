@@ -9,9 +9,9 @@ import Foundation
 
 final class DefaultMediaRepository: MediaRepository {
     
-    private let dataTransferService: DataTransferService
+    private let dataTransferService: AsyncDataTransferService
     
-    init(dataTransferService: DataTransferService) {
+    init(dataTransferService: AsyncDataTransferService) {
         self.dataTransferService = dataTransferService
     }
  

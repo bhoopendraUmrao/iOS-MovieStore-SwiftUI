@@ -9,9 +9,9 @@ import Foundation
 
 final class DefaultLoginRepository: LoginRepository {
     
-    private let dataTransferService: DataTransferService
+    private let dataTransferService: AsyncDataTransferService
     
-    init(dataTransferService: DataTransferService) {
+    init(dataTransferService: AsyncDataTransferService) {
         self.dataTransferService = dataTransferService
     }
     

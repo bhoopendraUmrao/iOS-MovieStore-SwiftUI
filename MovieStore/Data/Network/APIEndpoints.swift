@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SENetworking
 
 struct APIEndpoints {
     static func searchMovies(with queryRequest: MediaSearchRequest) -> Endpoint<MediaResponse> {
@@ -113,7 +114,9 @@ extension APIEndpoints.Auth {
                             method: .get)
         case .login(request: let request):
             return Endpoint(path: "3/authentication/token/validate_with_login",
-                            method: .post, headerParameters: ["Content-Type" : "application/json"], bodyParametersEncodable: request)
+                            method: .post,
+                            headerParamaters: ["Content-Type" : "application/json"],
+                            bodyParamatersEncodable: request)
         }
     }
 }
