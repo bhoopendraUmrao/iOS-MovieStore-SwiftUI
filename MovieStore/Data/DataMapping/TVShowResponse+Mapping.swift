@@ -1,0 +1,54 @@
+//
+//  TVShowResponse+Mapping.swift
+//  MovieStore
+//
+//  Created by Bhoopendra Umrao on 2/28/23.
+//
+
+import Foundation
+
+
+struct TVShowResponse: MediaResponse, Decodable {
+    
+    private enum CodingKeys: String, CodingKey {
+        case page
+        case totalPages = "total_pages"
+        case medias = "results"
+    }
+    let page: Int
+    let totalPages: Int
+    let medias: [MediaProtocol]
+    
+    init(from decoder: Decoder) throws {
+        let decoder = try decoder.container(keyedBy: CodingKeys.self)
+        self.page = try decoder.decode(Int.self, forKey: .page)
+        self.totalPages = try decoder.decode(Int.self, forKey: .totalPages)
+        self.medias = try decoder.decode([Media].self, forKey: .medias)
+    }
+}
+
+extension TVShowResponse {
+    struct Media: MediaProtocol {
+        
+        private enum CodingKeys: String, CodingKey {
+            case id
+            case title = "name"
+            case genre
+            case posterPath = "poster_path"
+            case overview
+            case releaseDate = "first_air_date"
+            case language = "original_language"
+            case rating = "vote_average"
+            case mediaType = "media_type"
+        }
+        let id: Int
+        let title: String?
+        let genre: Genre?
+        let posterPath: String?
+        let overview: String?
+        let releaseDate: String?
+        let language: String?
+        let rating: Float?
+        let mediaType: MediaType?
+    }
+}
