@@ -8,7 +8,7 @@
 import SwiftUI
 import YouTubeiOSPlayerHelper
 
-struct VideoPlayerView : UIViewRepresentable {
+struct YTVideoPlayerView : UIViewRepresentable {
     var videoID : String
     
     func makeUIView(context: Context) -> YTPlayerView {
@@ -27,6 +27,6 @@ struct VideoPlayerView : UIViewRepresentable {
 
 struct VideoPlayerView_Previews: PreviewProvider {
     static var previews: some View {
-        VideoPlayerView(videoID: "jQtP1dD6jQ0")
+        YTVideoPlayerView(videoID: "jQtP1dD6jQ0")
     }
 }

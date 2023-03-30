@@ -22,11 +22,8 @@ struct MediaListView: View {
                         switch media.mediaType {
                         case .tv:
                             appConfigurator.makeTvShowDetailScene(mediaID: media.id)
-                                .navigationBarBackButtonHidden()
-                            
                         case .movie, .person, .none:
                             appConfigurator.makeMovieDetailScene(mediaID: media.id)
-                                .navigationBarBackButtonHidden()
                         }
                         
                     } label: {

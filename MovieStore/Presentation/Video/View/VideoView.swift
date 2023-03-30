@@ -49,7 +49,7 @@ struct VideoView: View {
         .popover(isPresented: $isPlaying) {
             switch video.site {
             case .YouTube:
-                VideoPlayerView(videoID: video.key)
+                YTVideoPlayerView(videoID: video.key)
                     .background(Color.clear)
             case .Vimeo:
                 VideoPlayer(player: AVPlayer(url: video.site.video(videoId: video.key)!))

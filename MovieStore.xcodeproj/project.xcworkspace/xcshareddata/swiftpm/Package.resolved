@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "senetworking",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kudoleh/SENetworking",
+      "state" : {
+        "revision" : "4d6373b7eef7ef71c2e4833f56975f647f0a97bb",
+        "version" : "1.0.8"
+      }
+    },
+    {
+      "identity" : "youtube-ios-player-helper",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/youtube/youtube-ios-player-helper.git",
+      "state" : {
+        "revision" : "f57129cd4380ec0a74dd3a59da3270a1d653d59b",
+        "version" : "1.0.4"
+      }
+    }
+  ],
+  "version" : 2
+}

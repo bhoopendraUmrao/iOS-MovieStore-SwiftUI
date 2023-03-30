@@ -23,7 +23,7 @@ struct CharacterView: View {
             )
         }
         .background(Color.white)
-        .frame(maxWidth: .infinity, maxHeight: 160)
+        .frame(maxWidth: .infinity, minHeight: 100,maxHeight: 160)
     }
 }
 

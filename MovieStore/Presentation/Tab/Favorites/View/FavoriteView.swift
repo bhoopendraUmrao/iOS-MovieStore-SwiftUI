@@ -24,9 +24,9 @@ struct FavoriteView: View {
     var body: some View {
         if appConfigurator.isUserLoggedIn {
             NavigationView {
-                VStack {
+                ScrollView {
                     LazyVGrid(columns: twoColumnGrid,spacing: 0) {
-                        ForEach(favorites) { item in
+                        ForEach(favorites, id: \.id) { item in
                             NavigationLink {
                                 appConfigurator.makeMovieDetailScene(mediaID: Int(item.id))
                             } label: {
@@ -41,9 +41,8 @@ struct FavoriteView: View {
                             }
                         }
                     }
-                    Spacer()
                 }
-                .navigationBarHidden(true)
+                .navigationTitle("Favorite")
             }
         } else {
             Button {

@@ -16,7 +16,6 @@ struct MovieStoreApp: App {
             TabView {
                 appConfigurator.makeTrendingScene()
                     .environmentObject(appConfigurator)
-                    
                     .tabItem {
                         Label("Trending", systemImage: "book")
                     }

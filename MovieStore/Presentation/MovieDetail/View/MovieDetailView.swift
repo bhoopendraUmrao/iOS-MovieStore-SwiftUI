@@ -12,9 +12,9 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
     @State private var showingLogin = false
     @EnvironmentObject var appConfigurator: AppConfigurationContainer
     @Environment(\.managedObjectContext) var viewContext
-    @Environment(\.dismiss) private var dismiss
     @FetchRequest var favorite: FetchedResults<Favorite>
     @State var show: Bool = false
+    @State var isFavorite: Bool = false
     init(movieId: Int32, viewModel: MovieDetailVM) {
         _favorite = FetchRequest<Favorite>(entity: Favorite.entity(),
                                            sortDescriptors: [],
@@ -25,9 +25,9 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
     var body: some View {
         VStack {
             movieBanner
-                .frame(height: UIScreen.main.bounds.height*0.34)
+                .frame(height: UIScreen.main.bounds.height*0.30)
             ScrollView(.vertical) {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 8) {
                     Group {
                         Text("Overview")
                             .font(.title)
@@ -35,7 +35,6 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
                         Text(viewModel.movieDetail?.overview ?? "NA")
                             .lineSpacing(1.5)
                             .font(.body)
-                            .padding(.vertical, 0)
                         HStack {
                             Text("Geners: ")
                                 .font(.title3)
@@ -45,35 +44,39 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
                         Text("Casts:")
                             .font(.title3)
                             .fontWeight(.bold)
-                            .padding(0)
                         CharacterListView(casts: viewModel.castList)
                         Text("Videos:")
                             .font(.title3)
                             .fontWeight(.bold)
-                            .padding(0)
                         HVideoListView(videoList: viewModel.videoList)
                     }
-                    .padding(8)
+                    .padding(.horizontal, 8)
                 }
             }
             Spacer()
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.container, edges: .top)
         .onAppear {
-            viewModel.didFetch()
+            if viewModel.movieDetail == nil {
+                viewModel.didFetch()
+            }
+            isFavorite = favorite.count == 0 ? false : true
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(leading: CircleBackButton(),
+                            trailing: FavoriteButton(isSelected: $isFavorite).onChange(of: isFavorite, perform: { newValue in
+            toggleFavorite(newValue)
+        }))
     }
     
     private var movieBanner: some View {
         GeometryReader { context in
             ZStack {
                 VStack(alignment: .leading) {
-                    if let url = viewModel.movieDetail?.posterImage {
+                    if let url = URL(string: "https://api.lorem.space/image/movie?w=\(Int(context.size.width))&h=\(Int(context.size.height))") /*viewModel.movieDetail?.posterImage*/ {
                         AsyncImage(url: url) { image in
                             image.resizable()
                                 .aspectRatio(contentMode: .fill)
-                                .frame(maxWidth: context.size.width,
-                                       maxHeight: context.size.width - 100)
                                 .clipped()
                         } placeholder: {
                             ProgressView("Loading...")
@@ -81,92 +84,35 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
                                 .font(.body)
                                 .progressViewStyle(.automatic)
                                 .frame(maxWidth: context.size.width,
-                                       maxHeight: context.size.width - 100)
+                                       maxHeight: context.size.height)
                         }
                         .overlay {
                             GeometryReader { context in
-                                ZStack(alignment: .topLeading) {
-                                    backButton
-                                        .padding(.top, context.size.height*0.2)
-                                        .padding(.leading, 4)
-                                    ZStack {
-                                        Color(white: 0, opacity: 0.5)
-                                        HStack(alignment: .top) {
-                                            VStack(alignment: .leading) {
-                                                Text(viewModel.movieDetail?.title ?? "NA")
-                                                    .lineLimit(1)
-                                                    .foregroundColor(Color.white)
-                                                    .font(.title)
-                                                
-                                                Text(viewModel.movieDetail?.releasedDate ?? "NA")
-                                                    .foregroundColor(Color.white)
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                            }
-                                            Spacer()
-                                            UserRatingView(rating: viewModel.movieDetail?.rating ?? 0.0)
-                                                .frame(width: 40, height: 40, alignment: .center)
+                                ZStack(alignment: .bottomLeading) {
+                                    Color(white: 0, opacity: 0.5)
+                                    HStack(alignment: .top) {
+                                        VStack(alignment: .leading) {
+                                            Text(viewModel.movieDetail?.title ?? "NA")
+                                                .lineLimit(1)
+                                                .foregroundColor(Color.white)
+                                                .font(.title)
+                                            
+                                            Text(viewModel.movieDetail?.releasedDate ?? "NA")
+                                                .foregroundColor(Color.white)
+                                                .font(.subheadline)
+                                                .fontWeight(.semibold)
                                         }
+                                        Spacer()
+                                        UserRatingView(rating: viewModel.movieDetail?.rating ?? 0.0)
+                                            .frame(width: 40, height: 40, alignment: .center)
                                     }
-                                    .padding(.top, context.size.height/2 + 50)
+                                    .padding(8)
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-    }
-    
-    private var backButton: some View {
-        Button {
-            dismiss()
-        } label: {
-            Image(systemName: "arrow.backward")
-                .imageScale(.large)
-                .foregroundColor(.white)
-                .padding()
-                .background{
-                    Color.black
-                        .opacity(0.2)
-                }
-                .clipShape(Circle())
-        }
-    }
-    
-    private var favoriteButton: some View {
-        Button(action: {
-            if appConfigurator.isUserLoggedIn {
-                if let favorite = favorite.first {
-                    viewContext.delete(favorite)
-                } else {
-                    let favoriteMovie = Favorite(context: viewContext)
-                    favoriteMovie.title = viewModel.movieDetail?.title
-                    favoriteMovie.releaseDate = viewModel.movieDetail?.releasedDate
-                    favoriteMovie.id = Int32(viewModel.movieDetail?.id ?? 0)
-                    favoriteMovie.posterPath = viewModel.movieDetail?.posterImage
-                    favoriteMovie.rating = viewModel.movieDetail?.rating ?? 0.0
-                }
-                try? viewContext.save()
-            } else {
-                showingLogin.toggle()
-            }
-        }, label: {
-            HStack {
-                Group {
-                    Text("Mark as favorite")
-                    Image(systemName: "star")
-                        .padding(.trailing, 8)
-                }
-                .padding(.leading, 8)
-                .padding(.vertical, 8)
-            }
-            .border(.red, width: 1)
-            .foregroundColor(.red)
-            
-        })
-        .sheet(isPresented: $showingLogin) {
-            appConfigurator.makeLoginView()
         }
     }
     
@@ -177,6 +123,21 @@ struct MovieDetailView<MovieDetailVM>: View where MovieDetailVM: MovieDetailView
             .foregroundColor(Color(UIColor.lightGray))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 8)
+    }
+    
+    private func toggleFavorite(_ newValue: Bool) {
+        print("==== Updated value \(newValue)")
+        if !newValue, let favorite = favorite.first {
+            viewContext.delete(favorite)
+        } else if let movie = viewModel.movieDetail {
+            let favoriteMovie = Favorite(context: viewContext)
+            favoriteMovie.title = movie.title
+            favoriteMovie.releaseDate = movie.releasedDate
+            favoriteMovie.id = Int32(movie.id)
+            favoriteMovie.posterPath = movie.posterImage
+            favoriteMovie.rating = movie.rating
+        }
+        try? viewContext.save()
     }
 }
 
