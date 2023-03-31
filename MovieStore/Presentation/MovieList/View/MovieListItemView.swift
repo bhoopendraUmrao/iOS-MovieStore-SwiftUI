@@ -14,7 +14,7 @@ struct MovieListItemView: View {
         ZStack(alignment: .bottomLeading) {
             VStack(alignment: .leading) {
                 GeometryReader { context in
-                    if let url = URL(string: "https://api.lorem.space/image/movie?w=\(Int(context.size.width))&h=\(Int(context.size.height))") {
+                    if let url = movie.posterImage {
                         AsyncImage(url: url) { image in
                             image.resizable()
                                 .scaledToFit()
