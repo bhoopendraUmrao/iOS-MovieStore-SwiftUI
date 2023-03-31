@@ -21,7 +21,7 @@ struct MovieListItemView: View {
                                 .clipped()
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                         } placeholder: {
-                            ProgressView("Loading...")
+                            ProgressView("Loading..")
                                 .foregroundColor(.gray)
                                 .font(.body)
                                 .progressViewStyle(.automatic)
